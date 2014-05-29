@@ -10,27 +10,48 @@ class MoviesController < ApplicationController
 
   def index
 
-    #User.where({name: ["Alice", "Bob"]})
-    # SELECT * FROM users WHERE name IN ('Alice', 'Bob')
-     @all_ratings = Movie.movie_ratings
-    if params["ratings"]== nil
-      @checked_ratings = {"G"=>"true","PG"=>"true", "PG-13"=>"true", "R"=>"true"}
-    else
-      @checked_ratings = params["ratings"]
+    if session.key?(:sorting_settings)
+      #get sorting settings
+      sorting_settings = session[:sorting_settings]
     end
+    if session.key?(:filtering_settings)
+      #get filtering settings
+      filtering_settings = session[:filtering_settings]
+    else
+      filtering_settings = {"G"=>"true","PG"=>"true", "PG-13"=>"true", "R"=>"true"}
+    end
+
+    # what comes from params overrides session
+    if params.key?(:sort)
+      sorting_settings = params[:sort]
+    end
+
+    if params.key?("ratings")
+      filtering_settings = params["ratings"]
+    end
+    
+     @all_ratings = Movie.movie_ratings
+    #if params["ratings"]== nil
+     # @checked_ratings 
+    #else
+    #  @checked_ratings = params["ratings"]
+    #end
+    @checked_ratings = filtering_settings
     ratings_selected = @checked_ratings.keys
     @movies = Movie.where({rating: ratings_selected})
+    # User.where({name: ["Alice", "Bob"]})
+    # SELECT * FROM users WHERE name IN ('Alice', 'Bob')
 
-    if params.key?(:sort)
-      @movies = @movies.order(params[:sort]).all
+    if !sorting_settings.nil?
+      @movies = @movies.order(sorting_settings).all
       
       # Set CSS class
-      if params[:sort] == 'title'
+      if sorting_settings == 'title'
         @title_highlight = "hilite"
       else
         @title_highlight = "normal"
       end
-      if params[:sort] == 'release_date'
+      if sorting_settings == 'release_date'
         @release_date_highlight = "hilite"
       else
         @release_date_highlight = "normal"
@@ -38,7 +59,11 @@ class MoviesController < ApplicationController
       #raise params.inspect
     else
       #@movies = Movie.all
-    end  end
+    end  
+    # Preserve in Session
+    session[:sorting_settings] = sorting_settings
+    session[:filtering_settings] = filtering_settings
+  end
 
   def new
     # default: render 'new' template
