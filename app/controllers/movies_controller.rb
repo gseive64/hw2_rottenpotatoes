@@ -22,8 +22,9 @@ class MoviesController < ApplicationController
     @movies = Movie.where({rating: ratings_selected})
 
     if params.key?(:sort)
-      @movies = Movie.order(params[:sort]).all
+      @movies = @movies.order(params[:sort]).all
       
+      # Set CSS class
       if params[:sort] == 'title'
         @title_highlight = "hilite"
       else
