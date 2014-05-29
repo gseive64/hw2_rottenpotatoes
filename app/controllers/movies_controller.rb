@@ -9,12 +9,18 @@ class MoviesController < ApplicationController
   end
 
   def index
+
+    #User.where({name: ["Alice", "Bob"]})
+    # SELECT * FROM users WHERE name IN ('Alice', 'Bob')
      @all_ratings = Movie.movie_ratings
     if params["ratings"]== nil
       @checked_ratings = {"G"=>"true","PG"=>"true", "PG-13"=>"true", "R"=>"true"}
     else
       @checked_ratings = params["ratings"]
     end
+    ratings_selected = @checked_ratings.keys
+    @movies = Movie.where({rating: ratings_selected})
+
     if params.key?(:sort)
       @movies = Movie.order(params[:sort]).all
       
@@ -30,7 +36,7 @@ class MoviesController < ApplicationController
       end
       #raise params.inspect
     else
-      @movies = Movie.all
+      #@movies = Movie.all
     end  end
 
   def new
