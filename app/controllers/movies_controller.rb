@@ -9,6 +9,7 @@ class MoviesController < ApplicationController
   end
 
   def index
+    redirect_needed = false
 
     if session.key?(:sorting_settings)
       #get sorting settings
@@ -24,10 +25,23 @@ class MoviesController < ApplicationController
     # what comes from params overrides session
     if params.key?(:sort)
       sorting_settings = params[:sort]
+    else
+      if session.key?(:sorting_settings)
+        redirect_needed = true
+        params[:sort] = sorting_settings
+      end
     end
 
     if params.key?("ratings")
       filtering_settings = params["ratings"]
+     # if session.key?(:filtering_settings)
+      #  redirect_needed = true
+     #   params["ratings"] = filtering_settings
+     # end
+    end
+
+    if redirect_needed
+      redirect_to movies_path(params)
     end
     
      @all_ratings = Movie.movie_ratings
