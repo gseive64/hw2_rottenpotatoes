@@ -7,8 +7,23 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
-  end
+    if params.key?(:sort)
+      @movies = Movie.order(params[:sort]).all
+      
+      if params[:sort] == 'title'
+        @title_highlight = "hilite"
+      else
+        @title_highlight = "normal"
+      end
+      if params[:sort] == 'release_date'
+        @release_date_highlight = "hilite"
+      else
+        @release_date_highlight = "normal"
+      end
+      #raise params.inspect
+    else
+      @movies = Movie.all
+    end  end
 
   def new
     # default: render 'new' template
