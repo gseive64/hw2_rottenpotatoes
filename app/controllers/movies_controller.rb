@@ -20,62 +20,38 @@ class MoviesController < ApplicationController
       #get filtering settings
       filtering_settings = session[:filtering_settings]
     else
-      filtering_settings = {"G"=>"true","PG"=>"true", "PG-13"=>"true", "R"=>"true"}
+      filtering_settings = Hash.new
+      @all_ratings.each {|e| filtering_settings[e] = "true"}
     end
 
     # what comes from params overrides session
     if params.key?(:sort)
       sorting_settings = params[:sort]
-    else
-      if session.key?(:sorting_settings)
-        redirect_needed = true
-        params[:sort] = sorting_settings
-      end
+    elsif session.key?(:sorting_settings)
+      redirect_needed = true
+      params[:sort] = sorting_settings
     end
 
     if params.key?(:ratings)
       filtering_settings = params[:ratings]
-    else
-      if session.key?(:filtering_settings)
-        redirect_needed = true
-        params[:ratings] = filtering_settings
-      end
+    elsif session.key?(:filtering_settings)
+      redirect_needed = true
+      params[:ratings] = filtering_settings
     end
 
     if redirect_needed
       redirect_to movies_path(params)
     end
     
-     
-    #if params["ratings"]== nil
-     # @checked_ratings 
-    #else
-    #  @checked_ratings = params["ratings"]
-    #end
     @checked_ratings = filtering_settings
-    ratings_selected = @checked_ratings.keys
-    @movies = Movie.where({rating: ratings_selected})
+    @movies = Movie.where({rating: filtering_settings.keys}).order(sorting_settings)
     # User.where({name: ["Alice", "Bob"]})
     # SELECT * FROM users WHERE name IN ('Alice', 'Bob')
 
-    if !sorting_settings.nil?
-      @movies = @movies.order(sorting_settings).all
-      
-      # Set CSS class
-      if sorting_settings == 'title'
-        @title_highlight = "hilite"
-      else
-        @title_highlight = "normal"
-      end
-      if sorting_settings == 'release_date'
-        @release_date_highlight = "hilite"
-      else
-        @release_date_highlight = "normal"
-      end
-      #raise params.inspect
-    else
-      #@movies = Movie.all
-    end  
+    # Set CSS class
+    @title_highlight = sorting_settings == 'title' ? "hilite" : "normal"
+    @release_date_highlight = sorting_settings == 'release_date' ? "hilite" : "normal"  
+
     # Preserve in Session
     session[:sorting_settings] = sorting_settings
     session[:filtering_settings] = filtering_settings
