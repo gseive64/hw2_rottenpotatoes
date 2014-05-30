@@ -10,6 +10,7 @@ class MoviesController < ApplicationController
 
   def index
     redirect_needed = false
+    @all_ratings = Movie.movie_ratings
 
     if session.key?(:sorting_settings)
       #get sorting settings
@@ -32,19 +33,20 @@ class MoviesController < ApplicationController
       end
     end
 
-    if params.key?("ratings")
-      filtering_settings = params["ratings"]
-     # if session.key?(:filtering_settings)
-      #  redirect_needed = true
-     #   params["ratings"] = filtering_settings
-     # end
+    if params.key?(:ratings)
+      filtering_settings = params[:ratings]
+    else
+      if session.key?(:filtering_settings)
+        redirect_needed = true
+        params[:ratings] = filtering_settings
+      end
     end
 
     if redirect_needed
       redirect_to movies_path(params)
     end
     
-     @all_ratings = Movie.movie_ratings
+     
     #if params["ratings"]== nil
      # @checked_ratings 
     #else
